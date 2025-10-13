@@ -1,0 +1,25 @@
+name: obfuscator
+description: Library used to obfuscate Dart and Flutter source code.
+version: 1.0.0
+repository: https://github.com/ljmatan/obfuscator
+homepage: https://github.com/ljmatan/obfuscator
+issue_tracker: https://github.com/ljmatan/obfuscator/issues
+
+environment:
+  sdk: ^3.9.2
+
+executables:
+  obfuscator: obfuscator
+
+dependencies:
+  analyzer: ^8.2.0
+  dart_style: ^3.1.2
+  args: ^2.7.0
+  path: ^1.9.1
+  package_config: ^2.2.0
+  pubspec_parse: ^1.5.0
+  yaml_edit: ^2.2.2
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6

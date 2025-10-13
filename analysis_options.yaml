@@ -1,0 +1,16 @@
+include: package:lints/core.yaml
+
+linter:
+  rules:
+    prefer_single_quotes: true
+    depend_on_referenced_packages: false
+    use_build_context_synchronously: false
+    prefer_interpolation_to_compose_strings: false
+    sort_child_properties_last: false
+    require_trailing_commas: true
+    always_use_package_imports: true
+    public_member_api_docs: true
+
+formatter:
+  page_width: 140
+  trailing_commas: preserve

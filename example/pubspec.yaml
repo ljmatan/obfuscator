@@ -1,0 +1,6 @@
+name: obfuscator_example
+description: Example project used to showcase the obfuscation service.
+version: 1.0.0
+
+environment:
+  sdk: ^3.9.2
