@@ -22,18 +22,19 @@ class Configuration {
 
   /// Validate and retrieve the CLI arguments.
   ///
-  ({String sourceDirectoriesArg, String outputDirectoryArg, String? publicApiAnnotationsArg}) _processArguments(
+  ({String sourceDirectoriesArg, String outputDirectoryArg, String? publicApiIdentifiersArg}) _processArguments(
     List<String> arguments,
   ) {
     // Define argument identifiers.
     const sourceDirectoriesId = 'sourceDirectories';
     const outputDirectoryId = 'outputDirectory';
-    const publicApiAnnotationsId = 'publicApiAnnotations';
+    const publicApiIdentifierId = 'publicApiIdentifiers';
 
     // Instantiate and setup argument parser.
     final argumentParser = args.ArgParser(
       allowTrailingOptions: true,
     );
+
     for (final argument in <({String id, String alias, String help, bool mandatory})>{
       (
         id: sourceDirectoriesId,
@@ -48,10 +49,10 @@ class Configuration {
         mandatory: true,
       ),
       (
-        id: publicApiAnnotationsId,
+        id: publicApiIdentifierId,
         alias: 'pub',
         help:
-            'Optional annotation identifier for the classes marked as not to be obfuscated. '
+            'Optional annotation or object identifier for the values marked as not to be obfuscated. '
             'Defaults to the "DontObfuscate" annotation provided by the library.',
         mandatory: false,
       ),
@@ -63,16 +64,33 @@ class Configuration {
         mandatory: argument.mandatory,
       );
     }
+    argumentParser.addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Show usage information.',
+    );
+
+    // If no arguments are specified or the `--help` flag is provided, print help and exit.
+    if (arguments.isEmpty || arguments.contains('--help') || arguments.contains('-h')) {
+      print('Dart Obfuscator CLI');
+      print('');
+      print('Usage: dart run bin/main.dart --src=<directories> --out=<directory> [--pub=<annotations>]');
+      print('');
+      print(argumentParser.usage);
+      dart_io.exit(0);
+    }
+
     final cliArguments = argumentParser.parse(arguments);
 
     // Validate and return argument values.
     final sourceDirectoriesArg = cliArguments.option(sourceDirectoriesId);
     final outputDirectoryArg = cliArguments.option(outputDirectoryId);
-    final publicApiAnnotationsArg = cliArguments.option(publicApiAnnotationsId);
+    final publicApiIdentifiersArg = cliArguments.option(publicApiIdentifierId);
     return (
       sourceDirectoriesArg: sourceDirectoriesArg!,
       outputDirectoryArg: outputDirectoryArg!,
-      publicApiAnnotationsArg: publicApiAnnotationsArg,
+      publicApiIdentifiersArg: publicApiIdentifiersArg,
     );
   }
 
@@ -243,22 +261,22 @@ class Configuration {
     _initialiseOutputMergedFile();
   }
 
-  /// Optional annotation identifiers for the classes marked as not to be obfuscated.
+  /// Optional annotation or object identifiers for the values marked as not to be obfuscated.
   ///
-  /// Defaults to the [NoObfuscation] annotation provided by the library.
+  /// Defaults to the [NoObfuscation] annotation identifier provided by the library.
   ///
-  final publicApiAnnotations = <String>[
+  final publicApiIdentifiers = <String>[
     (NoObfuscation).toString(),
   ];
 
-  /// Set and validate the public API annotation collection.
+  /// Set and validate the public API identifier collection.
   ///
-  void _initialisePublicApiAnnotations({
-    required String? publicApiAnnotationsArg,
+  void _initialisePublicApiIdentifiers({
+    required String? publicApiIdentifiersArg,
   }) {
-    if (publicApiAnnotationsArg != null) {
-      final specifiedAnnotations = publicApiAnnotationsArg.split(',');
-      publicApiAnnotations.addAll(specifiedAnnotations);
+    if (publicApiIdentifiersArg != null) {
+      final specifiedIdentifiers = publicApiIdentifiersArg.split(',');
+      publicApiIdentifiers.addAll(specifiedIdentifiers);
     }
   }
 
@@ -360,8 +378,8 @@ class Configuration {
     await _initialiseOutputSpecifications(
       outputDirectoryArg: args.outputDirectoryArg,
     );
-    _initialisePublicApiAnnotations(
-      publicApiAnnotationsArg: args.publicApiAnnotationsArg,
+    _initialisePublicApiIdentifiers(
+      publicApiIdentifiersArg: args.publicApiIdentifiersArg,
     );
     _processYamlFiles();
     _initialiseAnalysisContextCollections();

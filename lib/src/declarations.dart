@@ -102,17 +102,32 @@ class ObjectDeclarationCollector {
 
   /// Whether an object is marked as not requiring obfuscation.
   ///
-  bool _hasPublicApiAnnotation(
+  bool _hasPublicApiAnnotationOrExcludedName(
     analyzer_ast.AnnotatedNode node,
   ) {
     for (var meta in node.metadata) {
-      if (_configuration.publicApiAnnotations.any(
-        (annotationName) {
-          return meta.name.name.contains(annotationName);
-        },
+      if (_configuration.publicApiIdentifiers.any(
+        (annotationName) => meta.name.name.contains(annotationName),
       )) {
         return true;
       }
+    }
+    final declaredName = (node is analyzer_ast.ClassDeclaration)
+        ? node.name.lexeme
+        : (node is analyzer_ast.MixinDeclaration)
+        ? node.name.lexeme
+        : (node is analyzer_ast.EnumDeclaration)
+        ? node.name.lexeme
+        : (node is analyzer_ast.VariableDeclaration)
+        ? node.name.lexeme
+        : null;
+    if (declaredName != null &&
+        _configuration.publicApiIdentifiers.any(
+          (id) {
+            return id == declaredName;
+          },
+        )) {
+      return true;
     }
     return false;
   }
@@ -163,7 +178,7 @@ class _ObjectDeclarationCollectorTopLevel extends analyzer_visitor.RecursiveAstV
   void visitClassDeclaration(
     analyzer_ast.ClassDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -182,7 +197,9 @@ class _ObjectDeclarationCollectorTopLevel extends analyzer_visitor.RecursiveAstV
   void visitConstructorDeclaration(
     analyzer_ast.ConstructorDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node) && node.name?.lexeme.isNotEmpty == true && node.name?.lexeme != '_') {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node) &&
+        node.name?.lexeme.isNotEmpty == true &&
+        node.name?.lexeme != '_') {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -201,7 +218,7 @@ class _ObjectDeclarationCollectorTopLevel extends analyzer_visitor.RecursiveAstV
   void visitEnumDeclaration(
     analyzer_ast.EnumDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -220,7 +237,7 @@ class _ObjectDeclarationCollectorTopLevel extends analyzer_visitor.RecursiveAstV
   void visitMixinDeclaration(
     analyzer_ast.MixinDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -239,7 +256,7 @@ class _ObjectDeclarationCollectorTopLevel extends analyzer_visitor.RecursiveAstV
   void visitExtensionDeclaration(
     analyzer_ast.ExtensionDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -266,7 +283,7 @@ class _ObjectDeclarationCollectorMethodsFunctions extends analyzer_visitor.Recur
   void visitMethodDeclaration(
     analyzer_ast.MethodDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       final isOverriden = node.declaredFragment?.element.metadata.isOverriden == true;
       final enclosingElement = isOverriden ? node.declaredFragment?.element.enclosingElement : null;
       final parent = enclosingElement is analyzer_element.InterfaceElement
@@ -299,7 +316,7 @@ class _ObjectDeclarationCollectorMethodsFunctions extends analyzer_visitor.Recur
   void visitFunctionDeclaration(
     analyzer_ast.FunctionDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       final parentId = _declarationCollector._collector.getEnclosingFunctionName(node);
       if (parentId != null) {
         _declarationCollector.collection.add(
@@ -329,7 +346,7 @@ class _ObjectDeclarationCollectorFields extends analyzer_visitor.RecursiveAstVis
   void visitEnumConstantDeclaration(
     analyzer_ast.EnumConstantDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       _declarationCollector.collection.add(
         ObjectDeclaration(
           filePath: _declarationCollector._collector.currentObjectCollectorSource.file.path,
@@ -348,7 +365,7 @@ class _ObjectDeclarationCollectorFields extends analyzer_visitor.RecursiveAstVis
   void visitFieldDeclaration(
     analyzer_ast.FieldDeclaration node,
   ) {
-    if (!_declarationCollector._hasPublicApiAnnotation(node)) {
+    if (!_declarationCollector._hasPublicApiAnnotationOrExcludedName(node)) {
       for (final v in node.fields.variables) {
         final element = v.declaredFragment?.element;
         final isOverriden = element?.metadata.isOverriden == true;

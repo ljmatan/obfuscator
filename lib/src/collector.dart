@@ -284,7 +284,12 @@ class ObjectCollector {
             declaration.parentId == reference.parentId &&
             declaration.element != null &&
             await _isSameElement(declaration.element, reference.parentElement);
-        if (isMatching) {
+        if (isMatching &&
+            !declaration.references.any(
+              (recordedReference) {
+                return recordedReference.filePath == reference.filePath && recordedReference.offset == reference.offset;
+              },
+            )) {
           declaration.references.add(reference);
           break;
         }

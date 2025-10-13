@@ -174,7 +174,15 @@ class ProjectMerger {
             final newImportValue = '${importSources.last}$line';
             importSources.remove(importSources.last);
             importSources.add(newImportValue);
-          } else if (!const {'import', 'part', 'export', 'library', '//'}.any(line.trimLeft().startsWith)) {
+          } else if (!const {
+            'import \'',
+            'part \'',
+            'part of \'',
+            'export \'',
+            'library;',
+            'library \'',
+            '//',
+          }.any(line.trimLeft().startsWith)) {
             sources.add(line);
           }
         }

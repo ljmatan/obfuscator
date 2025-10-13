@@ -15,3 +15,5 @@ out.*
 scripts/test.sh
 
 out/
+
+tmp/

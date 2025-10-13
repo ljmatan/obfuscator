@@ -1,0 +1,46 @@
+name: merged_app
+description: A new merged application.
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  app_tracking_transparency: ^2.0.6
+  cached_network_image: ^3.4.1
+  camera: ^0.11.1
+  collection: ^1.19.1
+  device_info_plus: ^11.5.0
+  encrypt: ^5.0.3
+  flutter:
+    sdk: flutter
+  flutter_auto_size_text: ^4.1.0
+  flutter_map: ^8.1.1
+  flutter_svg: ^2.2.0
+  http: ^1.5.0
+  image: ^4.5.4
+  json_annotation: ^4.9.0
+  obfuscator: ^0.0.1+1
+  package_info_plus: ^9.0.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
+  sembast_web: ^2.4.2
+  share_plus: ^11.0.0
+  shared_preferences: ^2.3.3
+  sqflite_common_ffi: ^2.3.6
+  sqflite_common_ffi_web: ^1.0.1+1
+  url_launcher: ^6.3.1
+  webview_flutter: ^4.13.0
+  zxing2: ^0.2.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.8.0
+  json_serializable: ^6.11.1
+
+flutter:
+  uses-material-design: true

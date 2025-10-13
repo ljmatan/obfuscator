@@ -1,10 +1,11 @@
-# Dart Obfuscator CLI Tool
+# Dart Obfuscator
 
 A command-line tool that obfuscates Dart (including Flutter) source code by renaming
 declarations and their references using the Dart analyzer.
 
 It is intended for preparing code to be shared as **private packages** or distributed
 in source form while reducing readability by renaming classes, mixins, methods, functions, and fields.
+
 The tool works on copied project sources (it does not overwrite the original) and produces an obfuscated copy,
 a single merged `merged.dart` file for the codebase, and a generated `pubspec.yaml` that reflects
 dependencies found in the sources.
@@ -24,7 +25,7 @@ dependencies found in the sources.
 
 - [How it works (high level)](#how-it-works-high-level)
 - [Generated outputs](#generated-outputs)
-- [Annotations and exclusion rules](#annotations-and-exclusion-rules)
+- [Exclusion rules](#exclusion-rules)
 - [Best practices / recommendations](#best-practices--recommendations)
 - [Limitations & caveats](#limitations--caveats)
 - [Security & legal considerations](#security--legal-considerations)
@@ -45,7 +46,7 @@ dependencies found in the sources.
   - A single `merged.dart` combining code units where applicable.
   - A generated `pubspec.yaml` inferred from source imports/metadata.
 
-- Support exclusion of items from obfuscation via annotation identifiers passed on the CLI (`--pub`).
+- Support exclusion of items from obfuscation via annotation or object identifiers passed on the CLI (`--pub`).
 - Intended workflow: obfuscate a codebase and share the obfuscated copy as a “private package”.
 
 ---
@@ -58,15 +59,15 @@ Providing the comma-separated source directory locations as `src` named argument
 while also including the output directory location with the `out` argument.
 
 ```bash
-dart run bin/main.dart --src /path/to/project1,/path/to/project2 --out /path/to/output
+dart run bin/obfuscator.dart --src /path/to/project1,/path/to/project2 --out /path/to/output
 ```
 
-2. Optionally, provide annotation identifiers to exclude certain symbols from obfuscation:
+2. Optionally, provide annotation or object identifiers to exclude certain symbols from obfuscation:
 
-Comma-separated list of annotation identifiers entered with the `pub` argument are excluded from obfuscation.
+Comma-separated list of identifiers entered with the `pub` argument are excluded from obfuscation.
 
 ```bash
-dart run bin/main.dart --src ./my_app --out ./obf_out --pub NoObfuscation,DoNotObfuscate
+dart run bin/obfuscator.dart --src ./my_app --out ./obf_out --pub NoObfuscation,AppLocalizations
 ```
 
 ---
@@ -79,7 +80,7 @@ This project is a Dart CLI app. To run it, you need a compatible Dart SDK instal
 
 ## Usage
 
-Run the main entrypoint `bin/main.dart`. The program accepts command-line arguments.
+Run the main entrypoint `bin/obfuscator.dart`. The program accepts command-line arguments.
 
 ### Required arguments
 
@@ -97,7 +98,9 @@ Run the main entrypoint `bin/main.dart`. The program accepts command-line argume
 
 ### Optional arguments
 
-- `--pub` — comma-separated list of annotation identifiers (fully-qualified or simple) that mark declarations **not** to be obfuscated. Default: `NoObfuscation` (lookup in libraries for a top-level `NoObfuscation` object).
+- `--pub` — comma-separated list of annotation or object identifiers (fully-qualified or simple)
+  that mark declarations **not** to be obfuscated.
+  Default: `NoObfuscation` (lookup in libraries for a top-level `NoObfuscation` object).
 
   - Example:
 
@@ -105,21 +108,24 @@ Run the main entrypoint `bin/main.dart`. The program accepts command-line argume
     --pub NoObfuscation,MyCompany.DoNotObfuscate
     ```
 
-Run `dart run bin/main.dart --help` for the full list and precise flag naming if your CLI parser differs.
+Run `dart run bin/obfuscator.dart --help` for the full list and precise flag naming.
 
 ### Examples
 
 Obfuscate two projects and write output into `/tmp/obf`:
 
 ```bash
-dart run bin/main.dart --src /projects/app1,/projects/shared_package --out /tmp/obf
+dart run bin/obfuscator.dart --src /projects/app1,/projects/shared_package --out /tmp/obf
 ```
 
 Obfuscate a project while excluding declarations annotated with `NoObfuscation` and `Keep`:
 
 ```bash
-dart run bin/main.dart --src ./app --out ./out --pub NoObfuscation,Keep
+dart run bin/obfuscator.dart --src ./app --out ./out --pub NoObfuscation,Keep
 ```
+
+Example obfuscated code for various projects can be found in the `output` directory:
+https://github.com/ljmatan/obfuscator/tree/main/output
 
 ---
 
@@ -128,7 +134,7 @@ dart run bin/main.dart --src ./app --out ./out --pub NoObfuscation,Keep
 1. **Copy**: The tool copies the source locations provided to the output directory into a working area.
 2. **Analysis**: Uses the Dart analyzer (resolved units via an `AnalysisContext`) to parse and fully resolve ASTs of the copied sources.
 3. **Discovery**: Walks declarations (classes, mixins, enums, typedefs, top-level functions, constructors, methods, fields, getters/setters) and builds a list of symbols to obfuscate.
-4. **Exclusions**: Skips symbols annotated with any supplied annotation identifiers (from `--pub`) or other built-in exclusions (e.g., symbols matching certain whitelists).
+4. **Exclusions**: Skips symbols annotated with any supplied identifiers (from `--pub`) or other built-in exclusions (e.g., symbols matching certain whitelists).
 5. **Renaming / Mapping**: Generates obfuscated identifiers and computes a mapping from original name → obfuscated name.
 6. **Reference resolution**: Using the resolved AST and element model, the tool collects and updates all references to each renamed declaration (constructor calls, method invocations, prefixed identifiers, property accessors, initializers, etc.).
 7. **Replace**: Performs source edits (safely, preserving formatting where possible) on the copied files to rename declarations and references.
@@ -146,14 +152,15 @@ dart run bin/main.dart --src ./app --out ./out --pub NoObfuscation,Keep
 
 ---
 
-## Annotations and exclusion rules
+## Exclusion rules
 
-- **Default exclusion**: the tool looks for a `NoObfuscation` object (or other identifiers passed via `--pub`) and will not obfuscate any declarations annotated with that annotation identifier.
+- **Default exclusion**: the tool looks for a `NoObfuscation` object (or other identifiers passed via `--pub`)
+  and will not obfuscate any matching declarations.
 
-- **How annotations are matched**:
+- **How identifiers are matched**:
 
   - Exact match by identifier name (e.g., `NoObfuscation`).
-  - Fully-qualified match if you provide the package path (e.g., `my_pkg.annotations.NoObfuscation`), depending on how imports resolve during analysis.
+  - Fully-qualified match if you provide the package path (e.g., `obfuscator.NoObfuscation`).
 
 - **Common use cases**:
 
