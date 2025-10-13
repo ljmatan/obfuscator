@@ -105,20 +105,6 @@ Run the main entrypoint `bin/main.dart`. The program accepts command-line argume
     --pub NoObfuscation,MyCompany.DoNotObfuscate
     ```
 
-- `--merge` — (boolean) produce `merged.dart` combining the selected code base into a single file. Default: enabled.
-
-- `--keep-comments` — (boolean) whether to preserve comments. Default: false (comments may be removed/minimized for obfuscation size reduction).
-
-- `--seed` — deterministic seed value for the obfuscation name generator. If provided, repeated runs with the same seed produce the same obfuscation mapping. Example:
-
-  ```
-  --seed 42
-  ```
-
-- `--map-file` — path to output a JSON mapping of original → obfuscated names (useful for debugging or reverse mapping within a controlled environment).
-
-- `--verbose` — enable verbose logging.
-
 Run `dart run bin/main.dart --help` for the full list and precise flag naming if your CLI parser differs.
 
 ### Examples
@@ -154,10 +140,9 @@ dart run bin/main.dart --src ./app --out ./out --pub NoObfuscation,Keep
 ## Generated outputs
 
 - `<out>/copy/<name>/...` — obfuscated copy of each provided source project.
-- `<out>/merged.dart` — single-file merge of the processed codebase (subject to `--merge` behavior).
+- `<out>/merged.dart` — single-file merge of the processed codebase.
 - `<out>/pubspec.yaml` — generated or inferred `pubspec.yaml`.
-- `<out>/mappings.json` — optional JSON map of original → obfuscated symbol names (if `--map-file` or `--verbose` mode requests it).
-- `<out>/logs/` — optional log files if verbose logging is enabled.
+- `<out>/mappings.json` — JSON map of original → obfuscated symbol names.
 
 ---
 
