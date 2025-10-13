@@ -13,4 +13,4 @@ SOURCE_DIRECTORIES=(
 DIRS_STR=$(IFS=,; echo "${SOURCE_DIRECTORIES[*]}")
 
 # Run the dart command with the provided specifications.
-dart run bin/main.dart --src="$DIRS_STR" --out="$PROJECT_DIR/out"
+dart run bin/obfuscator.dart --src="$DIRS_STR" --out="$PROJECT_DIR/out"
