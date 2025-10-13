@@ -1,6 +1,4 @@
-# README.md
-
-# Dart Obfuscator CLI
+# Dart Obfuscator CLI Tool
 
 A command-line tool that obfuscates Dart (including Flutter) source code by renaming
 declarations and their references using the Dart analyzer.
