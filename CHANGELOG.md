@@ -7,3 +7,7 @@
 - Add `help` flag for CLI command.
 - Fix README.md file errors.
 - Fix various logic errors.
+
+## 0.0.1+2
+
+- Update README.md file.

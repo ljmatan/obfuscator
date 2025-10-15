@@ -16,7 +16,6 @@ dependencies found in the sources.
 
 - [Features](#features)
 - [Quick start](#quick-start)
-- [Installation](#installation)
 - [Usage](#usage)
 
   - [Required arguments](#required-arguments)
@@ -37,7 +36,7 @@ dependencies found in the sources.
 ## Features
 
 - Parse and resolve Dart source code using the Dart analyzer.
-- Discover declarations (classes, mixins, enums, typedefs, top-level functions, methods, fields, getters/setters).
+- Discover declarations (classes, constructors, mixins, enums, typedefs, top-level functions, methods, fields, getters/setters).
 - Generate deterministic obfuscated identifiers and replace all references while preserving semantics.
 - Work on copies of supplied source folders; originals remain untouched.
 - Produce:
@@ -53,16 +52,28 @@ dependencies found in the sources.
 
 ## Quick start
 
-1. Run the obfuscator:
+1. CLI Usage
 
-Providing the comma-separated source directory locations as `src` named argument,
-while also including the output directory location with the `out` argument.
+1.1 Install the package
+
+You can install the package from the command line:
 
 ```bash
-dart run bin/obfuscator.dart --src /path/to/project1,/path/to/project2 --out /path/to/output
+dart pub global activate obfuscator
 ```
 
-2. Optionally, provide annotation or object identifiers to exclude certain symbols from obfuscation:
+1.2 Run the obfuscator:
+
+Once the package is installed, simply define the source (`--src`) and output (`--out`) directories,
+and the tool will proceed with the obfuscation process.
+
+Multiple projects can be setup for obfuscation by separating file paths with a comma.
+
+```bash
+obfuscator --src="/path/to/project1,/path/to/project2" --out="/path/to/output"
+```
+
+1.3 Optionally, provide annotation or object identifiers to exclude certain symbols from obfuscation:
 
 Comma-separated list of identifiers entered with the `pub` argument are excluded from obfuscation.
 
@@ -70,11 +81,34 @@ Comma-separated list of identifiers entered with the `pub` argument are excluded
 dart run bin/obfuscator.dart --src ./my_app --out ./obf_out --pub NoObfuscation,AppLocalizations
 ```
 
----
+2. Run From Source
 
-## Installation
+The project can also be ran using it's source code:
 
-This project is a Dart CLI app. To run it, you need a compatible Dart SDK installed (same minimum SDK as defined in this project's `pubspec.yaml`).
+2.1 Git clone
+
+Repo is fetched to the device using git.
+
+```bash
+git clone https://github.com/ljmatan/obfuscator
+```
+
+2.2 Run the obfuscator:
+
+Providing the comma-separated source directory locations as `src` named argument,
+while also including the output directory location with the `out` argument.
+
+```bash
+dart run bin/obfuscator.dart --src "/path/to/project1,/path/to/project2" --out "/path/to/output"
+```
+
+2.3 Optionally, provide annotation or object identifiers to exclude certain symbols from obfuscation:
+
+Comma-separated list of identifiers entered with the `pub` argument are excluded from obfuscation.
+
+```bash
+dart run bin/obfuscator.dart --src ./my_app --out ./obf_out --pub NoObfuscation,AppLocalizations
+```
 
 ---
 
@@ -100,7 +134,8 @@ Run the main entrypoint `bin/obfuscator.dart`. The program accepts command-line 
 
 - `--pub` — comma-separated list of annotation or object identifiers (fully-qualified or simple)
   that mark declarations **not** to be obfuscated.
-  Default: `NoObfuscation` (lookup in libraries for a top-level `NoObfuscation` object).
+
+  Default: `NoObfuscation`
 
   - Example:
 
@@ -135,7 +170,7 @@ https://github.com/ljmatan/obfuscator/tree/main/output
 2. **Analysis**: Uses the Dart analyzer (resolved units via an `AnalysisContext`) to parse and fully resolve ASTs of the copied sources.
 3. **Discovery**: Walks declarations (classes, mixins, enums, typedefs, top-level functions, constructors, methods, fields, getters/setters) and builds a list of symbols to obfuscate.
 4. **Exclusions**: Skips symbols annotated with any supplied identifiers (from `--pub`) or other built-in exclusions (e.g., symbols matching certain whitelists).
-5. **Renaming / Mapping**: Generates obfuscated identifiers and computes a mapping from original name → obfuscated name.
+5. **Renaming / Mapping**: Generates obfuscated identifiers and computes a mapping from original name to obfuscated name.
 6. **Reference resolution**: Using the resolved AST and element model, the tool collects and updates all references to each renamed declaration (constructor calls, method invocations, prefixed identifiers, property accessors, initializers, etc.).
 7. **Replace**: Performs source edits (safely, preserving formatting where possible) on the copied files to rename declarations and references.
 8. **Generate merged.dart**: Writes a combined `merged.dart` containing the full codebase (useful to distribute a single-file source version).
@@ -172,7 +207,6 @@ https://github.com/ljmatan/obfuscator/tree/main/output
 ## Best practices / recommendations
 
 - **Test the obfuscated build**: run `dart analyze` and `flutter test` / `dart test` on the obfuscated output before sharing to ensure no runtime breakages.
-- **Use deterministic seeds** for reproducible mapping across builds when needed.
 - **Annotate stable APIs** that must not be renamed (e.g., platform channel method names, reflection entries).
 - **Limit the scope**: for very large projects, consider obfuscating only selected libraries to reduce risk.
 - **Inspect mapping files** and retain them securely (they can be used to reverse-mapping in trusted contexts).
@@ -203,8 +237,8 @@ https://github.com/ljmatan/obfuscator/tree/main/output
 - Symbols still refer to old names:
 
   - Ensure you run the tool on a **resolved AST** environment (the tool runs analyzer resolution internally for correctness).
-  - Inspect `mappings.json` (if generated) to confirm the mapping.
-  - Verify that constructor initializing formals, property accessors, or top-level getters are normalized to the underlying field/variable by the tool (see code comments).
+  - Inspect `mappings.json` to confirm the mapping.
+  - Verify that constructor initializing formals, property accessors, or top-level getters are normalized to the underlying field/variable by the tool.
 
 - Build or runtime errors after obfuscation:
 
